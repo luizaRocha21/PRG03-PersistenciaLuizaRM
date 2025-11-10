@@ -4,19 +4,34 @@
  */
 package br.com.ifba.curso.view;
 
+import javax.swing.RowFilter;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
+import org.w3c.dom.events.DocumentEvent;
+
 /**
+ * Tela principal de listagem dos cursos.
+ * Exibe os cursos em uma JTable com opções para editar ou remover.
+ * Também permite adicionar novos cursos.
  *
  * @author luiza
  */
+
 public class CursoListar extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CursoListar.class.getName());
-
+    private TableRowSorter<DefaultTableModel> sorter;
+    
     /**
      * Creates new form CursoListar
      */
     public CursoListar() {
         initComponents();
+        configurarTabela();
+        configurarPesquisaDinamica(); //ativa a pesquisa instantânea
+        configurarPlaceholderPesquisa(); // comportamento do placeholder
+
     }
 
     /**
@@ -28,21 +43,22 @@ public class CursoListar extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
+        painelPai = new javax.swing.JPanel();
         btnAdicionarCurso = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jTextField1 = new javax.swing.JTextField();
+        txtPesquisar = new javax.swing.JTextField();
         jTabbedPane1 = new javax.swing.JTabbedPane();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
         jPanel2 = new javax.swing.JPanel();
         lblLupa = new javax.swing.JLabel();
+        painelTabela = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tblTabelaCursos = new javax.swing.JTable();
+        btnHome1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.LINE_AXIS));
 
-        jPanel1.setBackground(new java.awt.Color(0, 51, 51));
-        jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+        painelPai.setBackground(new java.awt.Color(0, 51, 51));
+        painelPai.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         btnAdicionarCurso.setBackground(new java.awt.Color(3, 34, 34));
         btnAdicionarCurso.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/add.png"))); // NOI18N
@@ -51,23 +67,35 @@ public class CursoListar extends javax.swing.JFrame {
                 btnAdicionarCursoActionPerformed(evt);
             }
         });
-        jPanel1.add(btnAdicionarCurso, new org.netbeans.lib.awtextra.AbsoluteConstraints(320, 20, 60, 40));
+        painelPai.add(btnAdicionarCurso, new org.netbeans.lib.awtextra.AbsoluteConstraints(320, 20, 60, 40));
 
-        jButton2.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jButton2.setForeground(new java.awt.Color(153, 153, 153));
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/home.png"))); // NOI18N
-        jButton2.setText("Homescreen");
-        jPanel1.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 20, 170, 40));
+        txtPesquisar.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        txtPesquisar.setForeground(new java.awt.Color(153, 153, 153));
+        txtPesquisar.setText("Pesquisar...");
+        painelPai.add(txtPesquisar, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 20, 180, 40));
+        painelPai.add(jTabbedPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 140, -1, -1));
 
-        jTextField1.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jTextField1.setForeground(new java.awt.Color(153, 153, 153));
-        jTextField1.setText("Pesquisar...");
-        jPanel1.add(jTextField1, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 20, 180, 40));
-        jPanel1.add(jTabbedPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 140, -1, -1));
+        jPanel2.setLayout(new java.awt.BorderLayout());
 
-        jTable1.setBackground(new java.awt.Color(243, 236, 236));
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        lblLupa.setBackground(new java.awt.Color(255, 255, 255));
+        lblLupa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/lupa.png"))); // NOI18N
+        jPanel2.add(lblLupa, java.awt.BorderLayout.CENTER);
+
+        painelPai.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 20, 210, 40));
+
+        painelTabela.setLayout(new java.awt.BorderLayout());
+
+        tblTabelaCursos.setBackground(new java.awt.Color(243, 236, 236));
+        tblTabelaCursos.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
                 {null, null, null, null, null, null},
                 {null, null, null, null, null, null},
                 {null, null, null, null, null, null},
@@ -79,36 +107,119 @@ public class CursoListar extends javax.swing.JFrame {
                 "Nome", "Descrição", "Professor", "Alunos", "Remover", "Editar"
             }
         ));
-        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+        tblTabelaCursos.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jTable1MouseClicked(evt);
+                tblTabelaCursosMouseClicked(evt);
             }
         });
-        jScrollPane1.setViewportView(jTable1);
+        jScrollPane1.setViewportView(tblTabelaCursos);
 
-        jPanel1.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 70, 540, 260));
+        painelTabela.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
-        jPanel2.setLayout(new java.awt.BorderLayout());
+        painelPai.add(painelTabela, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 80, 540, 260));
 
-        lblLupa.setBackground(new java.awt.Color(255, 255, 255));
-        lblLupa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/lupa.png"))); // NOI18N
-        jPanel2.add(lblLupa, java.awt.BorderLayout.CENTER);
+        btnHome1.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        btnHome1.setForeground(new java.awt.Color(153, 153, 153));
+        btnHome1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/home.png"))); // NOI18N
+        btnHome1.setText("Homescreen");
+        painelPai.add(btnHome1, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 20, 170, 40));
 
-        jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 20, 210, 40));
-
-        getContentPane().add(jPanel1);
+        getContentPane().add(painelPai);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnAdicionarCursoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAdicionarCursoActionPerformed
-        // TODO add your handling code here:
+        CursoCadastrar telaCadastro = new CursoCadastrar();
+        telaCadastro.setTitle("Cadastrar Novo Curso");
+        telaCadastro.setVisible(true);
     }//GEN-LAST:event_btnAdicionarCursoActionPerformed
 
-    private void jTable1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable1MouseClicked
+    private void tblTabelaCursosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblTabelaCursosMouseClicked
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTable1MouseClicked
+    }//GEN-LAST:event_tblTabelaCursosMouseClicked
+    /**
+     * Configura a pesquisa dinâmica que filtra os cursos conforme o usuário digita.
+     */
+    private void configurarPesquisaDinamica() {
+    javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) tblTabelaCursos.getModel();
+    javax.swing.table.TableRowSorter<javax.swing.table.DefaultTableModel> sorter = 
+        new javax.swing.table.TableRowSorter<>(model);
+    tblTabelaCursos.setRowSorter(sorter);
 
+    txtPesquisar.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+        @Override
+        public void insertUpdate(javax.swing.event.DocumentEvent e) {
+            filtrar();
+        }
+
+        @Override
+        public void removeUpdate(javax.swing.event.DocumentEvent e) {
+            filtrar();
+        }
+
+        @Override
+        public void changedUpdate(javax.swing.event.DocumentEvent e) {
+            filtrar();
+        }
+
+        private void filtrar() {
+            String texto = txtPesquisar.getText().trim();
+            if (texto.isEmpty() || texto.equalsIgnoreCase("Pesquisar...")) {
+                sorter.setRowFilter(null); // mostra tudo
+            } else {
+                sorter.setRowFilter(javax.swing.RowFilter.regexFilter("(?i)" + texto));
+            }
+        }
+    });
+}
+
+    /**
+ * Configura o comportamento do placeholder no campo de pesquisa.
+ * O texto "Pesquisar..." desaparece ao clicar e reaparece se o campo for deixado vazio.
+ */
+private void configurarPlaceholderPesquisa() {
+    txtPesquisar.setText("Pesquisar...");
+    txtPesquisar.setForeground(new java.awt.Color(153, 153, 153));
+
+    txtPesquisar.addFocusListener(new java.awt.event.FocusAdapter() {
+        @Override
+        public void focusGained(java.awt.event.FocusEvent e) {
+            if (txtPesquisar.getText().equals("Pesquisar...")) {
+                txtPesquisar.setText("");
+                txtPesquisar.setForeground(new java.awt.Color(0, 0, 0));
+            }
+        }
+
+        @Override
+        public void focusLost(java.awt.event.FocusEvent e) {
+            if (txtPesquisar.getText().trim().isEmpty()) {
+                txtPesquisar.setText("Pesquisar...");
+                txtPesquisar.setForeground(new java.awt.Color(153, 153, 153));
+            }
+        }
+    });
+}
+
+    private void configurarTabela() {
+    // Define o modelo da tabela
+    javax.swing.table.DefaultTableModel model = new javax.swing.table.DefaultTableModel(
+        new Object[][]{
+            {"POO", "Programação Orientada a Objetos", "Prof. Carlos", "10 alunos", "Remover", "Editar"},
+            {"Banco de Dados", "Modelagem e SQL", "Prof. Ana", "12 alunos", "Remover", "Editar"},
+        },
+        new String[]{"Nome", "Descrição", "Professor", "Alunos", "Remover", "Editar"}
+    );
+    tblTabelaCursos.setModel(model);
+
+    // Renderizadores e editores de botão
+    tblTabelaCursos.getColumn("Remover").setCellRenderer(new RenderizadorBotao("Remover"));
+    tblTabelaCursos.getColumn("Remover").setCellEditor(new EditorBotao(new javax.swing.JCheckBox(), tblTabelaCursos));
+
+    tblTabelaCursos.getColumn("Editar").setCellRenderer(new RenderizadorBotao("Editar"));
+    tblTabelaCursos.getColumn("Editar").setCellEditor(new EditorBotao(new javax.swing.JCheckBox(), tblTabelaCursos));
+}
+    
     /**
      * @param args the command line arguments
      */
@@ -136,13 +247,14 @@ public class CursoListar extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdicionarCurso;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JButton btnHome1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextField jTextField1;
     private javax.swing.JLabel lblLupa;
+    private javax.swing.JPanel painelPai;
+    private javax.swing.JPanel painelTabela;
+    private javax.swing.JTable tblTabelaCursos;
+    private javax.swing.JTextField txtPesquisar;
     // End of variables declaration//GEN-END:variables
 }
