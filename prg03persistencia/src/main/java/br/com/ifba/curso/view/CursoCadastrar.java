@@ -3,10 +3,17 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package br.com.ifba.curso.view;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.DefaultListModel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
@@ -21,6 +28,8 @@ import javax.swing.JTextField;
 public class CursoCadastrar extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CursoCadastrar.class.getName());
+    private List<String> alunos = new ArrayList<>();
+
 
     /**
      * Creates new form CursoCadastrar
@@ -28,8 +37,9 @@ public class CursoCadastrar extends javax.swing.JFrame {
     public CursoCadastrar() {
         initComponents();
         configurarListAlunos();
+        
     }
-
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -299,73 +309,84 @@ public class CursoCadastrar extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvarActionPerformed
-                                         
     String nome = txtNome.getText().trim();
-    String professor = txtProfessor.getText().trim();
-    String descricao = txtAreaDescricao.getText().trim();
+        String professor = txtProfessor.getText().trim();
+        String descricao = txtAreaDescricao.getText().trim();
 
-    if (nome.isEmpty() || professor.isEmpty() || descricao.isEmpty()) {
-        JOptionPane.showMessageDialog(this, "Preencha todos os campos!", "Aviso", JOptionPane.WARNING_MESSAGE);
-        return;
-    }
+        DefaultListModel<String> modelo = (DefaultListModel<String>) listAlunos.getModel();
+        List<String> alunos = new ArrayList<>();
+        for (int i = 0; i < modelo.size(); i++) {
+            alunos.add(modelo.getElementAt(i));
+        }
 
-    JOptionPane.showMessageDialog(this, 
-        "Curso salvo com sucesso!\n\n" +
-        "Nome: " + nome + "\n" +
-        "Professor: " + professor + "\n" +
-        "Descrição: " + descricao,
-        "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+        try {
+            br.com.ifba.curso.entity.Curso curso = new br.com.ifba.curso.entity.Curso();
+            curso.setNome(nome);
+            curso.setProfessor(professor);
+            curso.setDescricao(descricao);
+            curso.setAlunos(alunos);
 
-    // Limpa os campos após salvar
-    txtNome.setText("");
-    txtProfessor.setText("");
-    txtAreaDescricao.setText("");
+            br.com.ifba.curso.service.CursoService service = new br.com.ifba.curso.service.CursoService();
+            service.salvarCurso(curso);
+
+            JOptionPane.showMessageDialog(this, "Curso salvo com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            txtNome.setText("");
+            txtProfessor.setText("");
+            txtAreaDescricao.setText("");
+            modelo.clear();
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Erro ao salvar curso: " + ex.getMessage(),
+                    "Erro", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }
 
     }//GEN-LAST:event_btnSalvarActionPerformed
 
     private void btnHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHomeActionPerformed
-         this.dispose(); // fecha a tela atual
-        new CursoListar().setVisible(true); // abre a tela de listagem
+       this.dispose();
+        new CursoListar().setVisible(true);
     }//GEN-LAST:event_btnHomeActionPerformed
+    // 🔹 Configura a lista de alunos
     private void configurarListAlunos() {
-    DefaultListModel<String> model = new DefaultListModel<>();
-    listAlunos.setModel(model);
+        DefaultListModel<String> modelo = new DefaultListModel<>();
+        listAlunos.setModel(modelo);
 
-    listAlunos.addMouseListener(new MouseAdapter() {
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            if (e.getButton() == MouseEvent.BUTTON3) { // clique direito
-                String[] opcoes = {"Adicionar aluno", "Remover aluno"};
-                int escolha = JOptionPane.showOptionDialog(
-                    listAlunos,
-                    "O que deseja fazer?",
-                    "Gerenciar Alunos",
-                    JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,
-                    opcoes,
-                    opcoes[0]
-                );
+        if (alunos != null) {
+            for (String aluno : alunos) modelo.addElement(aluno);
+        }
 
-                DefaultListModel<String> modelo = (DefaultListModel<String>) listAlunos.getModel();
-
-                if (escolha == 0) { // adicionar
-                    String novoAluno = JOptionPane.showInputDialog("Nome do aluno:");
-                    if (novoAluno != null && !novoAluno.trim().isEmpty()) {
-                        modelo.addElement(novoAluno.trim());
-                    }
-                } else if (escolha == 1) { // remover
-                    int selecionado = listAlunos.getSelectedIndex();
-                    if (selecionado != -1) {
-                        modelo.remove(selecionado);
-                    } else {
-                        JOptionPane.showMessageDialog(listAlunos, "Selecione um aluno para remover!");
-                    }
+        // Clique duplo abre tela de gerenciamento de alunos
+        listAlunos.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    AdicionarAlunos tela = new AdicionarAlunos(CursoCadastrar.this, getListaAtualDeAlunos());
+                    tela.setLocationRelativeTo(CursoCadastrar.this);
+                    tela.setVisible(true);
                 }
             }
+        });
+    }
+
+    // 🔹 Retorna lista atual exibida
+    private List<String> getListaAtualDeAlunos() {
+        DefaultListModel<String> modelo = (DefaultListModel<String>) listAlunos.getModel();
+        List<String> lista = new ArrayList<>();
+        for (int i = 0; i < modelo.size(); i++) {
+            lista.add(modelo.getElementAt(i));
         }
-    });
-}
+        return lista;
+    }
+
+    // 🔹 Atualiza lista após fechar tela de alunos
+    public void atualizarListaAlunos(List<String> novosAlunos) {
+        DefaultListModel<String> modelo = (DefaultListModel<String>) listAlunos.getModel();
+        modelo.clear();
+        for (String aluno : novosAlunos) modelo.addElement(aluno);
+        this.alunos = novosAlunos;
+    }
+
     public JTextArea getTxtAreaDescricao() {
         return txtAreaDescricao;
     }
@@ -388,31 +409,6 @@ public class CursoCadastrar extends javax.swing.JFrame {
 
     public void setTxtProfessor(JTextField txtProfessor) {
         this.txtProfessor = txtProfessor;
-    }
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-            logger.log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new CursoCadastrar().setVisible(true));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

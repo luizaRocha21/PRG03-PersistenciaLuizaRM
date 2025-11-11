@@ -3,12 +3,17 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package br.com.ifba.curso.view;
-
-import javax.swing.RowFilter;
-import javax.swing.event.DocumentListener;
+import br.com.ifba.curso.entity.Curso;
+import br.com.ifba.curso.service.CursoService;
+import java.awt.Color;
+import java.awt.Component;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
-import org.w3c.dom.events.DocumentEvent;
 
 /**
  * Tela principal de listagem dos cursos.
@@ -17,21 +22,18 @@ import org.w3c.dom.events.DocumentEvent;
  *
  * @author luiza
  */
-
 public class CursoListar extends javax.swing.JFrame {
-    
+
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CursoListar.class.getName());
     private TableRowSorter<DefaultTableModel> sorter;
-    
-    /**
-     * Creates new form CursoListar
-     */
+    private java.util.List<Curso> cursos; // mantém referência para edição/remoção
+
     public CursoListar() {
         initComponents();
         configurarTabela();
-        configurarPesquisaDinamica(); //ativa a pesquisa instantânea
-        configurarPlaceholderPesquisa(); // comportamento do placeholder
-
+        configurarPesquisaDinamica();
+        configurarPlaceholderPesquisa();
+        carregarCursos();
     }
 
     /**
@@ -107,11 +109,6 @@ public class CursoListar extends javax.swing.JFrame {
                 "Nome", "Descrição", "Professor", "Alunos", "Remover", "Editar"
             }
         ));
-        tblTabelaCursos.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                tblTabelaCursosMouseClicked(evt);
-            }
-        });
         jScrollPane1.setViewportView(tblTabelaCursos);
 
         painelTabela.add(jScrollPane1, java.awt.BorderLayout.CENTER);
@@ -122,6 +119,11 @@ public class CursoListar extends javax.swing.JFrame {
         btnHome1.setForeground(new java.awt.Color(153, 153, 153));
         btnHome1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/home.png"))); // NOI18N
         btnHome1.setText("Homescreen");
+        btnHome1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnHome1ActionPerformed(evt);
+            }
+        });
         painelPai.add(btnHome1, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 20, 170, 40));
 
         getContentPane().add(painelPai);
@@ -135,91 +137,183 @@ public class CursoListar extends javax.swing.JFrame {
         telaCadastro.setVisible(true);
     }//GEN-LAST:event_btnAdicionarCursoActionPerformed
 
-    private void tblTabelaCursosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblTabelaCursosMouseClicked
-        // TODO add your handling code here:
-    }//GEN-LAST:event_tblTabelaCursosMouseClicked
-    /**
-     * Configura a pesquisa dinâmica que filtra os cursos conforme o usuário digita.
-     */
+    private void btnHome1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHome1ActionPerformed
+        int confirm = JOptionPane.showConfirmDialog(this,
+        "Deseja realmente sair do programa?",
+        "Sair", JOptionPane.YES_NO_OPTION);
+
+    if (confirm == JOptionPane.YES_OPTION) {
+        System.exit(0);
+    }
+    }//GEN-LAST:event_btnHome1ActionPerformed
+    // Pesquisa dinâmica
     private void configurarPesquisaDinamica() {
-    javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) tblTabelaCursos.getModel();
-    javax.swing.table.TableRowSorter<javax.swing.table.DefaultTableModel> sorter = 
-        new javax.swing.table.TableRowSorter<>(model);
-    tblTabelaCursos.setRowSorter(sorter);
+        DefaultTableModel model = (DefaultTableModel) tblTabelaCursos.getModel();
+        sorter = new TableRowSorter<>(model);
+        tblTabelaCursos.setRowSorter(sorter);
 
-    txtPesquisar.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-        @Override
-        public void insertUpdate(javax.swing.event.DocumentEvent e) {
-            filtrar();
-        }
-
-        @Override
-        public void removeUpdate(javax.swing.event.DocumentEvent e) {
-            filtrar();
-        }
-
-        @Override
-        public void changedUpdate(javax.swing.event.DocumentEvent e) {
-            filtrar();
-        }
-
-        private void filtrar() {
-            String texto = txtPesquisar.getText().trim();
-            if (texto.isEmpty() || texto.equalsIgnoreCase("Pesquisar...")) {
-                sorter.setRowFilter(null); // mostra tudo
-            } else {
-                sorter.setRowFilter(javax.swing.RowFilter.regexFilter("(?i)" + texto));
+        txtPesquisar.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            private void filtrar() {
+                String texto = txtPesquisar.getText().trim();
+                if (texto.isEmpty() || texto.equalsIgnoreCase("Pesquisar...")) {
+                    sorter.setRowFilter(null);
+                } else {
+                    sorter.setRowFilter(javax.swing.RowFilter.regexFilter("(?i)" + texto));
+                }
             }
+
+            @Override public void insertUpdate(javax.swing.event.DocumentEvent e) { filtrar(); }
+            @Override public void removeUpdate(javax.swing.event.DocumentEvent e) { filtrar(); }
+            @Override public void changedUpdate(javax.swing.event.DocumentEvent e) { filtrar(); }
+        });
+    }   
+
+    // Carrega cursos do banco e popula a tabela
+    private void carregarCursos() {
+    try {
+        CursoService service = new CursoService();
+        this.cursos = service.listarCursos();
+
+        DefaultTableModel model = (DefaultTableModel) tblTabelaCursos.getModel();
+        model.setRowCount(0);
+
+        // Adiciona os cursos à tabela
+        for (Curso curso : cursos) {
+            int qtdAlunos = (curso.getAlunos() != null) ? curso.getAlunos().size() : 0;
+            model.addRow(new Object[]{
+                curso.getNome(),
+                curso.getDescricao(),
+                curso.getProfessor(),
+                qtdAlunos + (qtdAlunos == 1 ? " aluno" : " alunos"),
+                "Editar",
+                "Remover"
+            });
         }
-    });
+
+        // === RENDERIZADORES PERSONALIZADOS ===
+        // Coluna "Editar"
+        tblTabelaCursos.getColumnModel().getColumn(4)
+                .setCellRenderer(new RenderizadorBotao("Editar"));
+
+        // Coluna "Remover"
+        tblTabelaCursos.getColumnModel().getColumn(5)
+                .setCellRenderer(new RenderizadorBotao("Remover"));
+
+        // === TOOLTIP PERSONALIZADO PARA TODAS AS COLUNAS ===
+        tblTabelaCursos.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(
+                    JTable table, Object value, boolean isSelected,
+                    boolean hasFocus, int row, int column) {
+
+                JLabel label = (JLabel) super.getTableCellRendererComponent(
+                        table, value, isSelected, hasFocus, row, column);
+
+                label.setHorizontalAlignment(SwingConstants.CENTER);
+                label.setOpaque(true);
+                label.setBackground(isSelected ? new Color(230, 230, 255) : Color.WHITE);
+
+                // 🔹 Tooltip padrão: mostra o texto completo do campo
+                if (value != null) {
+                    label.setToolTipText(value.toString());
+                } else {
+                    label.setToolTipText(null);
+                }
+
+                // 🔹 Tooltip especial para a coluna "Alunos"
+                if (column == 3 && row < cursos.size()) {
+                    Curso curso = cursos.get(row);
+                    if (curso.getAlunos() != null && !curso.getAlunos().isEmpty()) {
+                        String tooltip = "<html>" + String.join("<br>", curso.getAlunos()) + "</html>";
+                        label.setToolTipText(tooltip);
+                    } else {
+                        label.setToolTipText("Nenhum aluno cadastrado");
+                    }
+                }
+
+                return label;
+            }
+        });
+
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(this,
+                "Erro ao carregar cursos: " + ex.getMessage(),
+                "Erro", JOptionPane.ERROR_MESSAGE);
+    }
 }
 
-    /**
- * Configura o comportamento do placeholder no campo de pesquisa.
- * O texto "Pesquisar..." desaparece ao clicar e reaparece se o campo for deixado vazio.
- */
-private void configurarPlaceholderPesquisa() {
-    txtPesquisar.setText("Pesquisar...");
-    txtPesquisar.setForeground(new java.awt.Color(153, 153, 153));
+    // Placeholder visual do campo de pesquisa
+    private void configurarPlaceholderPesquisa() {
+        txtPesquisar.setText("Pesquisar...");
+        txtPesquisar.setForeground(new java.awt.Color(153, 153, 153));
 
-    txtPesquisar.addFocusListener(new java.awt.event.FocusAdapter() {
-        @Override
-        public void focusGained(java.awt.event.FocusEvent e) {
-            if (txtPesquisar.getText().equals("Pesquisar...")) {
-                txtPesquisar.setText("");
-                txtPesquisar.setForeground(new java.awt.Color(0, 0, 0));
+        txtPesquisar.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                if (txtPesquisar.getText().equals("Pesquisar...")) {
+                    txtPesquisar.setText("");
+                    txtPesquisar.setForeground(new java.awt.Color(0, 0, 0));
+                }
             }
-        }
 
-        @Override
-        public void focusLost(java.awt.event.FocusEvent e) {
-            if (txtPesquisar.getText().trim().isEmpty()) {
-                txtPesquisar.setText("Pesquisar...");
-                txtPesquisar.setForeground(new java.awt.Color(153, 153, 153));
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (txtPesquisar.getText().trim().isEmpty()) {
+                    txtPesquisar.setText("Pesquisar...");
+                    txtPesquisar.setForeground(new java.awt.Color(153, 153, 153));
+                }
             }
-        }
-    });
-}
+        });
+    }
 
     private void configurarTabela() {
-    // Define o modelo da tabela
-    javax.swing.table.DefaultTableModel model = new javax.swing.table.DefaultTableModel(
-        new Object[][]{
-            {"POO", "Programação Orientada a Objetos", "Prof. Carlos", "10 alunos", "Remover", "Editar"},
-            {"Banco de Dados", "Modelagem e SQL", "Prof. Ana", "12 alunos", "Remover", "Editar"},
-        },
-        new String[]{"Nome", "Descrição", "Professor", "Alunos", "Remover", "Editar"}
-    );
+    DefaultTableModel model = new DefaultTableModel(
+        new Object[]{"Nome", "Descrição", "Professor", "Alunos", "Editar", "Remover"}, 0
+    ) {
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            // Somente colunas Editar e Remover são clicáveis
+            return column == 4 || column == 5;
+        }
+    };
+
     tblTabelaCursos.setModel(model);
 
-    // Renderizadores e editores de botão
-    tblTabelaCursos.getColumn("Remover").setCellRenderer(new RenderizadorBotao("Remover"));
-    tblTabelaCursos.getColumn("Remover").setCellEditor(new EditorBotao(new javax.swing.JCheckBox(), tblTabelaCursos));
+    // Aparência geral
+    tblTabelaCursos.setRowHeight(32);
+    tblTabelaCursos.setShowGrid(true);
+    tblTabelaCursos.setGridColor(new java.awt.Color(220, 220, 220));
+    tblTabelaCursos.setIntercellSpacing(new java.awt.Dimension(6, 4));
+    tblTabelaCursos.setSelectionBackground(new java.awt.Color(230, 240, 255));
+    tblTabelaCursos.setSelectionForeground(java.awt.Color.BLACK);
 
+    // Cabeçalho
+    javax.swing.table.JTableHeader header = tblTabelaCursos.getTableHeader();
+    header.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 13));
+    header.setBackground(new java.awt.Color(50, 100, 200));
+    header.setForeground(java.awt.Color.WHITE);
+    header.setOpaque(false);
+    header.setReorderingAllowed(false);
+
+    // Renderizadores
     tblTabelaCursos.getColumn("Editar").setCellRenderer(new RenderizadorBotao("Editar"));
-    tblTabelaCursos.getColumn("Editar").setCellEditor(new EditorBotao(new javax.swing.JCheckBox(), tblTabelaCursos));
+    tblTabelaCursos.getColumn("Remover").setCellRenderer(new RenderizadorBotao("Remover"));
+
+    // ✅ Editores específicos para cada coluna
+    tblTabelaCursos.getColumn("Editar")
+            .setCellEditor(new EditorBotao(new javax.swing.JCheckBox(), tblTabelaCursos, "editar"));
+    tblTabelaCursos.getColumn("Remover")
+            .setCellEditor(new EditorBotao(new javax.swing.JCheckBox(), tblTabelaCursos, "remover"));
+
+    // Larguras das colunas
+    tblTabelaCursos.getColumnModel().getColumn(0).setPreferredWidth(150); // Nome
+    tblTabelaCursos.getColumnModel().getColumn(1).setPreferredWidth(200); // Descrição
+    tblTabelaCursos.getColumnModel().getColumn(2).setPreferredWidth(150); // Professor
+    tblTabelaCursos.getColumnModel().getColumn(3).setPreferredWidth(200); // Alunos
+    tblTabelaCursos.getColumnModel().getColumn(4).setPreferredWidth(90);  // Editar
+    tblTabelaCursos.getColumnModel().getColumn(5).setPreferredWidth(100); // Remover
 }
-    
+
     /**
      * @param args the command line arguments
      */

@@ -3,30 +3,72 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package br.com.ifba.curso.view;
+import br.com.ifba.curso.entity.Curso;
+import br.com.ifba.curso.service.CursoService;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.DefaultListModel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 /**
  * Tela para edição de cursos existentes.
- * Permite alterar nome, professor, descrição e gerenciar a lista de alunos.
- * É aberta a partir da tabela de cursos na tela CursoListar.
- *
- * @author luiza
+ * Permite alterar nome, professor, descrição e gerenciar lista de alunos.
  */
-
 public class CursoEditar extends javax.swing.JFrame {
-    
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CursoEditar.class.getName());
 
-    /**
-     * Creates new form CursoEditar
-     */
-    public CursoEditar() {
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CursoEditar.class.getName());
+    private Curso curso;
+    
+    public CursoEditar(Curso curso) {
+        this.curso = curso;
         initComponents();
         configurarListAlunos();
+        preencherCampos();
     }
+
+
+    private void preencherCampos() {
+        txtNome.setText(curso.getNome());
+        txtProfessor.setText(curso.getProfessor());
+        txtAreaDescricao.setText(curso.getDescricao());
+
+        DefaultListModel<String> modelo = new DefaultListModel<>();
+        if (curso.getAlunos() != null) {
+            for (String a : curso.getAlunos()) {
+                modelo.addElement(a);
+            }
+        }
+        listAlunos.setModel(modelo);
+    }
+
+    // 🔹 Retorna lista atual de alunos exibidos
+    public List<String> getListaAtualDeAlunos() {
+        DefaultListModel<String> modelo = (DefaultListModel<String>) listAlunos.getModel();
+        List<String> lista = new ArrayList<>();
+        for (int i = 0; i < modelo.size(); i++) {
+            lista.add(modelo.get(i));
+        }
+        return lista;
+    }
+
+    // 🔹 Atualiza lista de alunos após retornar da tela AdicionarAlunos
+    public void atualizarListaAlunos(List<String> alunos) {
+        DefaultListModel<String> modelo = new DefaultListModel<>();
+        for (String a : alunos) {
+            modelo.addElement(a);
+        }
+        listAlunos.setModel(modelo);
+    }
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -310,100 +352,53 @@ public class CursoEditar extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSalvarEdicaoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvarEdicaoActionPerformed
+        curso.setNome(txtNome.getText().trim());
+        curso.setProfessor(txtProfessor.getText().trim());
+        curso.setDescricao(txtAreaDescricao.getText().trim());
 
-    String nome = txtNome.getText().trim();
-    String professor = txtProfessor.getText().trim();
-    String descricao = txtAreaDescricao.getText().trim();
+        DefaultListModel<String> modelo = (DefaultListModel<String>) listAlunos.getModel();
+        List<String> alunos = new ArrayList<>();
+        for (int i = 0; i < modelo.size(); i++) {
+            alunos.add(modelo.getElementAt(i));
+        }
+        curso.setAlunos(alunos);
 
-    if (nome.isEmpty() || professor.isEmpty() || descricao.isEmpty()) {
-        JOptionPane.showMessageDialog(this, "Preencha todos os campos!", "Aviso", JOptionPane.WARNING_MESSAGE);
-        return;
-    }
-
-    JOptionPane.showMessageDialog(this,
-            "Edição salva com sucesso!\n\n" +
-            "Nome: " + nome + "\n" +
-            "Professor: " + professor + "\n" +
-            "Descrição: " + descricao,
-            "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-
-    this.dispose(); // Fecha a tela após salvar
-
+        try {
+            new CursoService().atualizarCurso(curso);
+            JOptionPane.showMessageDialog(this, "Curso atualizado com sucesso!");
+            this.dispose();
+            new CursoListar().setVisible(true);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Erro ao atualizar curso: " + e.getMessage(),
+                    "Erro", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnSalvarEdicaoActionPerformed
 
     private void btnHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHomeActionPerformed
-         this.dispose(); // fecha a tela atual
-        new CursoListar().setVisible(true); // abre a tela de listagem
+        this.dispose();
+        new CursoListar().setVisible(true);
     }//GEN-LAST:event_btnHomeActionPerformed
-    public void setCurso(String nome, String descricao, String professor) {
-    txtNome.setText(nome);
-    txtAreaDescricao.setText(descricao);
-    txtProfessor.setText(professor);
-}
+    // Configuração da lista de alunos
+    // Clique na lista abre a tela AdicionarAlunos
+    
     private void configurarListAlunos() {
-    DefaultListModel<String> model = new DefaultListModel<>();
-    listAlunos.setModel(model);
+        DefaultListModel<String> modelo = new DefaultListModel<>();
+        listAlunos.setModel(modelo);
 
-    listAlunos.addMouseListener(new MouseAdapter() {
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            if (e.getButton() == MouseEvent.BUTTON3) { // clique direito
-                String[] opcoes = {"Adicionar aluno", "Remover aluno"};
-                int escolha = JOptionPane.showOptionDialog(
-                    listAlunos,
-                    "O que deseja fazer?",
-                    "Gerenciar Alunos",
-                    JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,
-                    opcoes,
-                    opcoes[0]
-                );
-
-                DefaultListModel<String> modelo = (DefaultListModel<String>) listAlunos.getModel();
-
-                if (escolha == 0) { // adicionar
-                    String novoAluno = JOptionPane.showInputDialog("Nome do aluno:");
-                    if (novoAluno != null && !novoAluno.trim().isEmpty()) {
-                        modelo.addElement(novoAluno.trim());
-                    }
-                } else if (escolha == 1) { // remover
-                    int selecionado = listAlunos.getSelectedIndex();
-                    if (selecionado != -1) {
-                        modelo.remove(selecionado);
-                    } else {
-                        JOptionPane.showMessageDialog(listAlunos, "Selecione um aluno para remover!");
-                    }
+        // Clique simples ou duplo abre a tela de gerenciamento de alunos
+        listAlunos.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                // Ao clicar na lista, abrir tela para adicionar/editar/remover alunos
+                if (e.getClickCount() == 1 || e.getClickCount() == 2) {
+                    AdicionarAlunos tela = new AdicionarAlunos(CursoEditar.this, getListaAtualDeAlunos());
+                    tela.setLocationRelativeTo(CursoEditar.this);
+                    tela.setVisible(true);
                 }
             }
-        }
-    });
-}
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-            logger.log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new CursoEditar().setVisible(true));
+        });
     }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnHome;

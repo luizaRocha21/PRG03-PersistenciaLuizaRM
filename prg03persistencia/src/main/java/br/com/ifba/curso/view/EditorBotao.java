@@ -3,125 +3,106 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package br.com.ifba.curso.view;
-
-/**
- * Classe responsável por controlar as ações dos botões "Editar" e "Remover"
- * da JTable em CursoListar.
- * Ao clicar em "Editar", abre a tela CursoEditar; ao clicar em "Remover",
- * exibe uma confirmação e exclui o curso selecionado.
- *
- * @author luiza
- */
-
-
-
+import br.com.ifba.curso.entity.Curso;
+import br.com.ifba.curso.service.CursoService;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellEditor;
 
 public class EditorBotao extends DefaultCellEditor {
-
-    private JButton button;
-    private String label;
+    private final JButton button;
     private boolean clicked;
     private int row;
-    private JTable table;
+    private final JTable table;
+    private final CursoService service;
+    private final String tipo; // "editar" ou "remover"
 
-    public EditorBotao(JCheckBox checkBox, JTable table) {
+    public EditorBotao(JCheckBox checkBox, JTable table, String tipo) {
         super(checkBox);
         this.table = table;
+        this.tipo = tipo;
+        this.service = new CursoService();
 
         button = new JButton();
         button.setOpaque(true);
+        button.setFocusPainted(false);
+        button.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
 
-        // Ao clicar no botão, encerramos a edição da célula
+        // Define ação específica conforme tipo
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (clicked) {
+                    if ("editar".equalsIgnoreCase(tipo)) {
+                        editarCurso(row);
+                    } else if ("remover".equalsIgnoreCase(tipo)) {
+                        removerCurso(row);
+                    }
+                }
+                clicked = false;
                 fireEditingStopped();
             }
         });
     }
 
     @Override
-    public Component getTableCellEditorComponent(JTable table, Object value,
-                                                 boolean isSelected, int row, int col) {
-        label = (value == null) ? "" : value.toString();
-        button.setText(label);
-        clicked = true;
+    public Component getTableCellEditorComponent(
+            JTable table, Object value, boolean isSelected, int row, int col) {
         this.row = row;
+        button.setText(value == null ? "" : value.toString());
+        clicked = true;
         return button;
     }
 
     @Override
     public Object getCellEditorValue() {
-        if (clicked) {
-            if ("Remover".equals(label)) {
-                removerCurso(row);
-            } else if ("Editar".equals(label)) {
-                editarCurso(row);
-            }
-        }
-        clicked = false;
-        return label;
+        return button.getText();
     }
 
     private void removerCurso(int row) {
         String nome = (String) table.getValueAt(row, 0);
-
         int opt = JOptionPane.showConfirmDialog(button,
                 "Deseja realmente remover o curso \"" + nome + "\"?",
                 "Confirmação de Remoção", JOptionPane.YES_NO_OPTION);
 
         if (opt == JOptionPane.YES_OPTION) {
-            DefaultTableModel model = (DefaultTableModel) table.getModel();
-            model.removeRow(row);
-            JOptionPane.showMessageDialog(button,
-                    "Curso \"" + nome + "\" removido com sucesso!",
-                    "Removido", JOptionPane.INFORMATION_MESSAGE);
+            try {
+                Curso curso = service.buscarPorNome(nome);
+                if (curso != null) {
+                    service.removerCurso(curso);
+                }
+                ((DefaultTableModel) table.getModel()).removeRow(row);
+                JOptionPane.showMessageDialog(button,
+                        "Curso \"" + nome + "\" removido com sucesso!",
+                        "Removido", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(button,
+                        "Erro ao remover curso: " + e.getMessage(),
+                        "Erro", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
     private void editarCurso(int row) {
-        String nome = (String) table.getValueAt(row, 0);
-        String descricao = (String) table.getValueAt(row, 1);
-        String professor = (String) table.getValueAt(row, 2);
+        try {
+            String nome = (String) table.getValueAt(row, 0);
+            Curso curso = service.buscarPorNome(nome);
 
-        int opt = JOptionPane.showConfirmDialog(button,
-                "Deseja editar o curso \"" + nome + "\"?",
-                "Editar Curso", JOptionPane.YES_NO_OPTION);
-
-        if (opt == JOptionPane.YES_OPTION) {
-            // Abre a tela de edição e preenche com os dados do curso selecionado
-            CursoEditar telaEditar = new CursoEditar();
-            telaEditar.setTitle("Editar Curso - " + nome);
-
-            // Preenche os campos da tela de edição
-            telaEditar.setVisible(true);
-            telaEditar.toFront();
-
-            // Usa SwingUtilities.invokeLater para garantir que os campos já existam
-            SwingUtilities.invokeLater(() -> {
-                telaEditar.setCurso(nome, descricao, professor);
-            });
-
+            if (curso != null) {
+                CursoEditar telaEditar = new CursoEditar(curso);
+                telaEditar.setTitle("Editar Curso - " + nome);
+                telaEditar.setVisible(true);
+            } else {
+                JOptionPane.showMessageDialog(button,
+                        "Curso não encontrado no banco de dados.",
+                        "Erro", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(button,
-                    "A tela de edição foi aberta.\nEdite os dados e clique em 'Salvar Edição'.",
-                    "Editar Curso", JOptionPane.INFORMATION_MESSAGE);
+                    "Erro ao abrir a tela de edição: " + e.getMessage(),
+                    "Erro", JOptionPane.ERROR_MESSAGE);
         }
-    }
-
-    @Override
-    public boolean stopCellEditing() {
-        clicked = false;
-        return super.stopCellEditing();
-    }
-
-    @Override
-    protected void fireEditingStopped() {
-        super.fireEditingStopped();
     }
 }

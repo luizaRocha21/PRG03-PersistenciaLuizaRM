@@ -4,14 +4,43 @@ Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to c
 Click nbfs://nbhost/SystemFileSystem/Templates/XML/XMLDocument.xml to edit this template
 -->
 
-<persistence xmlns="https://jakarta.ee/xml/ns/persistence" version="3.0">
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+                                 https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
+             version="3.0">
+
+    <!-- Unidade de persistência usada no projeto -->
     <persistence-unit name="ifbaPU" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+        <!-- ENTIDADES REGISTRADAS -->
         <class>br.com.ifba.curso.entity.Curso</class>
+        <!-- Adicione aqui outras entidades, se houver -->
+        
         <properties>
-            <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:mem:test"/>
+
+            <!-- CONFIGURAÇÃO DE CONEXÃO COM O BANCO -->
+            <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
+            <property name="jakarta.persistence.jdbc.url" 
+                      value="jdbc:mysql://localhost:3306/ifba_cursos?useUnicode=true&amp;characterEncoding=UTF-8&amp;serverTimezone=America/Sao_Paulo"/>
+            <property name="jakarta.persistence.jdbc.user" value="root"/>
+            <property name="jakarta.persistence.jdbc.password" value="Lurm33884974"/>
+
+            <!-- CONFIGURAÇÕES DO HIBERNATE -->
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL8Dialect"/>
             <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.highlight_sql" value="true"/>
+
+            <!-- ATIVAÇÃO DO GERENCIAMENTO DE CONTEXTO E FETCH CORRETO -->
+            <property name="hibernate.enable_lazy_load_no_trans" value="true"/>
+            <property name="hibernate.current_session_context_class" value="thread"/>
+
+            <!-- LOGGING -->
+            <property name="hibernate.generate_statistics" value="false"/>
+
         </properties>
     </persistence-unit>
 </persistence>
-
