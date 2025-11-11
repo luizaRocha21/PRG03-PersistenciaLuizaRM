@@ -4,30 +4,28 @@
  */
 package br.com.ifba.curso.view;
 import br.com.ifba.curso.entity.Curso;
-import br.com.ifba.curso.service.CursoService;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import br.com.ifba.curso.controller.CursoController;
+import br.com.ifba.curso.view.AdicionarAlunos;
+import br.com.ifba.curso.view.CursoListar;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultListModel;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
 
 /**
  * Tela para edição de cursos existentes.
- * Permite alterar nome, professor, descrição e gerenciar lista de alunos.
+ * Permite alterar nome, professor, descrição e gerenciar a lista de alunos.
+ * @author luiza
  */
 public class CursoEditar extends javax.swing.JFrame {
 
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CursoEditar.class.getName());
+    private final CursoController controller = new CursoController(); // ✅ usa o controller em vez do service direto
     private Curso curso;
-    
+
+    /**
+     * Construtor que recebe o curso a ser editado.
+     */
     public CursoEditar(Curso curso) {
         this.curso = curso;
         initComponents();
@@ -35,7 +33,9 @@ public class CursoEditar extends javax.swing.JFrame {
         preencherCampos();
     }
 
-
+    /**
+     * Preenche os campos da tela com os dados do curso recebido.
+     */
     private void preencherCampos() {
         txtNome.setText(curso.getNome());
         txtProfessor.setText(curso.getProfessor());
@@ -50,8 +50,10 @@ public class CursoEditar extends javax.swing.JFrame {
         listAlunos.setModel(modelo);
     }
 
-    // 🔹 Retorna lista atual de alunos exibidos
-    public List<String> getListaAtualDeAlunos() {
+    /**
+     * Retorna a lista atual de alunos exibida na tela.
+     */
+    private List<String> getListaAtualDeAlunos() {
         DefaultListModel<String> modelo = (DefaultListModel<String>) listAlunos.getModel();
         List<String> lista = new ArrayList<>();
         for (int i = 0; i < modelo.size(); i++) {
@@ -60,7 +62,9 @@ public class CursoEditar extends javax.swing.JFrame {
         return lista;
     }
 
-    // 🔹 Atualiza lista de alunos após retornar da tela AdicionarAlunos
+    /**
+     * Atualiza a lista de alunos após retornar da tela AdicionarAlunos.
+     */
     public void atualizarListaAlunos(List<String> alunos) {
         DefaultListModel<String> modelo = new DefaultListModel<>();
         for (String a : alunos) {
@@ -68,7 +72,6 @@ public class CursoEditar extends javax.swing.JFrame {
         }
         listAlunos.setModel(modelo);
     }
-
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -352,44 +355,54 @@ public class CursoEditar extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSalvarEdicaoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvarEdicaoActionPerformed
-        curso.setNome(txtNome.getText().trim());
-        curso.setProfessor(txtProfessor.getText().trim());
-        curso.setDescricao(txtAreaDescricao.getText().trim());
-
-        DefaultListModel<String> modelo = (DefaultListModel<String>) listAlunos.getModel();
-        List<String> alunos = new ArrayList<>();
-        for (int i = 0; i < modelo.size(); i++) {
-            alunos.add(modelo.getElementAt(i));
-        }
-        curso.setAlunos(alunos);
-
+  
+     // Botão Salvar Edição — Atualiza o curso com os novos dados.
+    
         try {
-            new CursoService().atualizarCurso(curso);
-            JOptionPane.showMessageDialog(this, "Curso atualizado com sucesso!");
+            // Atualiza os atributos do objeto curso com o que está na tela
+            curso.setNome(txtNome.getText().trim());
+            curso.setProfessor(txtProfessor.getText().trim());
+            curso.setDescricao(txtAreaDescricao.getText().trim());
+            curso.setAlunos(getListaAtualDeAlunos());
+
+            // ✅ Usa o controller para aplicar validações e atualizar no banco
+            controller.atualizarCurso(curso);
+
+            JOptionPane.showMessageDialog(this, "Curso atualizado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
             this.dispose();
             new CursoListar().setVisible(true);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Erro ao atualizar curso: " + e.getMessage(),
-                    "Erro", JOptionPane.ERROR_MESSAGE);
+
+        } catch (IllegalArgumentException ex) {
+            // Erro de validação do controller
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Aviso", JOptionPane.WARNING_MESSAGE);
+        } catch (Exception ex) {
+            // Erro genérico (ex: conexão, persistência, etc.)
+            JOptionPane.showMessageDialog(this, "Erro ao atualizar curso: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+            logger.log(java.util.logging.Level.SEVERE, "Erro ao atualizar curso", ex);
         }
+
     }//GEN-LAST:event_btnSalvarEdicaoActionPerformed
 
     private void btnHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHomeActionPerformed
+
+     //Botão Home — Retorna para a tela de listagem.
+     
         this.dispose();
         new CursoListar().setVisible(true);
+
     }//GEN-LAST:event_btnHomeActionPerformed
-    // Configuração da lista de alunos
-    // Clique na lista abre a tela AdicionarAlunos
-    
+    /**
+     * Configura o comportamento da lista de alunos.
+     * Um clique abre a tela de gerenciamento de alunos.
+     */
     private void configurarListAlunos() {
         DefaultListModel<String> modelo = new DefaultListModel<>();
         listAlunos.setModel(modelo);
 
-        // Clique simples ou duplo abre a tela de gerenciamento de alunos
+        // Clique simples ou duplo abre a tela para adicionar/editar/remover alunos
         listAlunos.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
-                // Ao clicar na lista, abrir tela para adicionar/editar/remover alunos
                 if (e.getClickCount() == 1 || e.getClickCount() == 2) {
                     AdicionarAlunos tela = new AdicionarAlunos(CursoEditar.this, getListaAtualDeAlunos());
                     tela.setLocationRelativeTo(CursoEditar.this);
@@ -398,7 +411,6 @@ public class CursoEditar extends javax.swing.JFrame {
             }
         });
     }
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnHome;

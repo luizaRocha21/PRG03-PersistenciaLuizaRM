@@ -3,36 +3,30 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package br.com.ifba.curso.entity;
+
 import br.com.ifba.infrastructure.entity.PersistenceEntity;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Entidade Curso representando um curso com lista de alunos.
+ * @author luiza
+ * Entidade Curso – representa um curso com lista de alunos.
  */
 @Entity
 @Table(name = "curso")
 public class Curso extends PersistenceEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     private String nome;
     private String descricao;
     private String professor;
 
-    // Lista de nomes dos alunos vinculados ao curso
     @ElementCollection
     @CollectionTable(name = "curso_alunos", joinColumns = @JoinColumn(name = "curso_id"))
     @Column(name = "nome_aluno")
     private List<String> alunos = new ArrayList<>();
 
-    // Getters e setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
+    // Getters e Setters
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
 

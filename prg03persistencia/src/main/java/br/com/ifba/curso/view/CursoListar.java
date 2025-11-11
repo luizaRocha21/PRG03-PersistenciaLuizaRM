@@ -4,7 +4,7 @@
  */
 package br.com.ifba.curso.view;
 import br.com.ifba.curso.entity.Curso;
-import br.com.ifba.curso.service.CursoService;
+import br.com.ifba.curso.controller.CursoController;
 import java.awt.Color;
 import java.awt.Component;
 import javax.swing.JLabel;
@@ -26,7 +26,9 @@ public class CursoListar extends javax.swing.JFrame {
 
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CursoListar.class.getName());
     private TableRowSorter<DefaultTableModel> sorter;
-    private java.util.List<Curso> cursos; // mantém referência para edição/remoção
+    private java.util.List<Curso> cursos;
+    private final CursoController controller = new CursoController();
+
 
     public CursoListar() {
         initComponents();
@@ -171,8 +173,7 @@ public class CursoListar extends javax.swing.JFrame {
     // Carrega cursos do banco e popula a tabela
     private void carregarCursos() {
     try {
-        CursoService service = new CursoService();
-        this.cursos = service.listarCursos();
+        this.cursos = controller.listarCursos();
 
         DefaultTableModel model = (DefaultTableModel) tblTabelaCursos.getModel();
         model.setRowCount(0);

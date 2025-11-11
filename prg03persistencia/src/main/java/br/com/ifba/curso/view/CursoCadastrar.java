@@ -3,41 +3,40 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package br.com.ifba.curso.view;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import br.com.ifba.curso.entity.Curso;
+import br.com.ifba.curso.controller.CursoController;
+import br.com.ifba.infrastructure.util.StringUtil;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultListModel;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 /**
- * Tela para cadastro de novos cursos.
- * Contém campos para nome, professor, descrição e uma lista interativa de alunos.
- * Ao salvar, retorna para a tela de listagem de cursos (CursoListar).
+ * Tela responsável por cadastrar um novo curso.
+ * Camadas acessadas: View → Controller → Service → DAO → Banco.
+ * Inclui validações usando StringUtil.
  *
  * @author luiza
  */
-
 public class CursoCadastrar extends javax.swing.JFrame {
     
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CursoCadastrar.class.getName());
+    private static final java.util.logging.Logger logger = 
+            java.util.logging.Logger.getLogger(CursoCadastrar.class.getName());
+    
+    // Lista temporária de alunos associados ao curso
     private List<String> alunos = new ArrayList<>();
 
-
     /**
-     * Creates new form CursoCadastrar
+     * Construtor padrão: inicializa a tela e configura a lista de alunos.
      */
     public CursoCadastrar() {
         initComponents();
         configurarListAlunos();
-        
+        setLocationRelativeTo(null); // Centraliza a janela na tela
     }
     
     /**
@@ -309,7 +308,7 @@ public class CursoCadastrar extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvarActionPerformed
-    String nome = txtNome.getText().trim();
+         String nome = txtNome.getText().trim();
         String professor = txtProfessor.getText().trim();
         String descricao = txtAreaDescricao.getText().trim();
 
@@ -319,35 +318,53 @@ public class CursoCadastrar extends javax.swing.JFrame {
             alunos.add(modelo.getElementAt(i));
         }
 
+        // 🔹 Validação com StringUtil
+        if (StringUtil.isNullOrEmpty(nome)) {
+            JOptionPane.showMessageDialog(this, "O nome do curso é obrigatório!", "Atenção", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        if (StringUtil.isNullOrEmpty(professor)) {
+            JOptionPane.showMessageDialog(this, "O nome do professor é obrigatório!", "Atenção", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
         try {
-            br.com.ifba.curso.entity.Curso curso = new br.com.ifba.curso.entity.Curso();
+            // Cria entidade e popula dados
+            Curso curso = new Curso();
             curso.setNome(nome);
             curso.setProfessor(professor);
             curso.setDescricao(descricao);
             curso.setAlunos(alunos);
 
-            br.com.ifba.curso.service.CursoService service = new br.com.ifba.curso.service.CursoService();
-            service.salvarCurso(curso);
+            // Chama o controller (não o service diretamente)
+            CursoController controller = new CursoController();
+            controller.salvarCurso(curso);
 
             JOptionPane.showMessageDialog(this, "Curso salvo com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+
+            // Limpa campos
             txtNome.setText("");
             txtProfessor.setText("");
             txtAreaDescricao.setText("");
             modelo.clear();
 
+            // Volta para a tela de listagem
+            this.dispose();
+            new CursoListar().setVisible(true);
+
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Erro ao salvar curso: " + ex.getMessage(),
                     "Erro", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
+            logger.log(java.util.logging.Level.SEVERE, null, ex);
         }
-
     }//GEN-LAST:event_btnSalvarActionPerformed
 
     private void btnHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHomeActionPerformed
        this.dispose();
         new CursoListar().setVisible(true);
     }//GEN-LAST:event_btnHomeActionPerformed
-    // 🔹 Configura a lista de alunos
+    // === MÉTODOS AUXILIARES ===
+    
     private void configurarListAlunos() {
         DefaultListModel<String> modelo = new DefaultListModel<>();
         listAlunos.setModel(modelo);
@@ -356,7 +373,7 @@ public class CursoCadastrar extends javax.swing.JFrame {
             for (String aluno : alunos) modelo.addElement(aluno);
         }
 
-        // Clique duplo abre tela de gerenciamento de alunos
+        // Clique duplo para abrir tela de adicionar alunos
         listAlunos.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
