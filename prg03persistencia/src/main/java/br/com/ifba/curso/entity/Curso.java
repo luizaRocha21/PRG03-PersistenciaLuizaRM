@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package br.com.ifba.curso.entity;
-
+import br.com.ifba.infrastructure.entity.PersistenceEntity;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "curso")
-public class Curso {
+public class Curso extends PersistenceEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
