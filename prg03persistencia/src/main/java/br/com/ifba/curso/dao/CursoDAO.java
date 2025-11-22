@@ -6,25 +6,30 @@ package br.com.ifba.curso.dao;
 import br.com.ifba.curso.entity.Curso;
 import br.com.ifba.infrastructure.dao.GenericDao;
 import jakarta.persistence.NoResultException;
+import org.springframework.stereotype.Repository;
 
 /**
- * DAO específico da entidade Curso.
- * Herda métodos CRUD do GenericDao e adiciona consultas personalizadas.
+ * @author luiza
+ * DAO de Curso gerenciado pelo Spring.
  */
+@Repository
 public class CursoDAO extends GenericDao<Curso> {
 
     public CursoDAO() {
         super(Curso.class);
     }
 
-    // Método específico: busca curso pelo nome
+    /**
+     * Consulta específica pelo nome do curso.
+     */
     public Curso buscarPorNome(String nome) {
         try {
             return em.createQuery(
-                    "SELECT c FROM Curso c LEFT JOIN FETCH c.alunos WHERE c.nome = :nome",
-                    Curso.class)
-                    .setParameter("nome", nome)
-                    .getSingleResult();
+                "SELECT c FROM Curso c LEFT JOIN FETCH c.alunos WHERE c.nome = :nome",
+                Curso.class
+            )
+            .setParameter("nome", nome)
+            .getSingleResult();
         } catch (NoResultException e) {
             return null;
         }

@@ -6,50 +6,42 @@ package br.com.ifba.curso.service;
 import br.com.ifba.curso.dao.CursoDAO;
 import br.com.ifba.curso.entity.Curso;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * @author luiza
- * Camada de serviço que conecta a interface Swing ao DAO.
- * Aqui centralizamos a lógica de negócio e chamadas ao banco de dados.
- * 
- * Métodos:
- *  - salvarCurso
- *  - listarCursos
- *  - removerCurso
- *  - atualizarCurso
- *  - buscarPorNome
+ * Camada de negócio, gerenciada pelo Spring.
  */
-public class CursoService implements ICursoService{
+@Service
+public class CursoService implements ICursoService {
 
-    private final CursoDAO cursoDao = new CursoDAO();
+    // Injeção de dependência do DAO
+    @Autowired
+    private CursoDAO cursoDao;
 
-    // ---------- SALVAR ----------
     @Override
     public void salvarCurso(Curso curso) {
         cursoDao.save(curso);
     }
 
-    // ---------- ATUALIZAR ----------
     @Override
     public void atualizarCurso(Curso curso) {
         cursoDao.update(curso);
     }
 
-    // ---------- REMOVER ----------
     @Override
     public void removerCurso(Curso curso) {
         cursoDao.delete(curso);
     }
 
-    // ---------- LISTAR ----------
     @Override
     public List<Curso> listarCursos() {
         return cursoDao.findAll();
     }
 
-    // ---------- BUSCAR POR NOME ----------
     @Override
     public Curso buscarPorNome(String nome) {
-    return cursoDao.buscarPorNome(nome);
+        return cursoDao.buscarPorNome(nome);
     }
 }

@@ -3,7 +3,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package br.com.ifba.curso.view;
-
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -11,9 +10,9 @@ import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 
 /**
- * Renderiza botões "Editar" e "Remover" estilizados dentro da JTable.
- * Versão sem ícones (evita erro de ImageIcon nulo).
- * 
+ * Renderiza visualmente os botões "Editar" e "Remover" dentro da JTable.
+ * Não executa ação — apenas desenha.
+ * A ação é tratada pelo EditorBotao.
  * @author luiza
  */
 public class RenderizadorBotao extends JButton implements TableCellRenderer {
@@ -29,7 +28,7 @@ public class RenderizadorBotao extends JButton implements TableCellRenderer {
         setFont(new Font("Segoe UI", Font.BOLD, 12));
         setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Efeito de hover suave
+        // Efeito visual ao passar o mouse
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -50,9 +49,10 @@ public class RenderizadorBotao extends JButton implements TableCellRenderer {
         Graphics2D g2 = (Graphics2D) g.create();
 
         // Anti-serrilhado
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // Define cores base
+        // Cores do botão (EDITAR x REMOVER)
         Color corBase;
         Color corHover;
         Color sombra;
@@ -70,22 +70,23 @@ public class RenderizadorBotao extends JButton implements TableCellRenderer {
         int width = getWidth();
         int height = getHeight();
 
-        // desenha sombra
+        // Sombra
         g2.setColor(sombra);
         g2.fillRoundRect(2, 4, width - 4, height - 4, 12, 12);
 
-        // desenha fundo principal
+        // Fundo
         g2.setColor(hover ? corHover : corBase);
         g2.fillRoundRect(0, 0, width - 4, height - 4, 12, 12);
 
-        // desenha borda
+        // Borda
         g2.setColor(Color.WHITE);
         g2.drawRoundRect(0, 0, width - 5, height - 5, 12, 12);
 
-        // desenha texto
+        // Texto centralizado
         FontMetrics fm = g2.getFontMetrics();
         int textX = (width - fm.stringWidth(getText())) / 2;
         int textY = (height + fm.getAscent() - fm.getDescent()) / 2 - 2;
+
         g2.setColor(Color.WHITE);
         g2.drawString(getText(), textX, textY);
 
@@ -93,10 +94,19 @@ public class RenderizadorBotao extends JButton implements TableCellRenderer {
     }
 
     @Override
-    public Component getTableCellRendererComponent(JTable table, Object value,
-                                                   boolean isSelected, boolean hasFocus, int row, int column) {
-        tipoBotao = (value == null) ? "" : value.toString();
+    public Component getTableCellRendererComponent(
+            JTable table, Object value, boolean isSelected,
+            boolean hasFocus, int row, int column) {
+
+        // Define o tipo do botão conforme o valor da célula
+        tipoBotao = (value == null ? "" : value.toString());
         setText(tipoBotao);
+
+        // Evita que o botão fique com fundo azul quando selecionado
+        if (isSelected) {
+            setForeground(Color.WHITE);
+        }
+
         return this;
     }
 }

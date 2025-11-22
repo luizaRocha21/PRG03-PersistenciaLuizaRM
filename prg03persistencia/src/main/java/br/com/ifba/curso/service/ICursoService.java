@@ -7,7 +7,6 @@ import br.com.ifba.curso.entity.Curso;
 import java.util.List;
 
 /**
- *
  * @author luiza
  * Interface que define os serviços disponíveis para Curso.
  */

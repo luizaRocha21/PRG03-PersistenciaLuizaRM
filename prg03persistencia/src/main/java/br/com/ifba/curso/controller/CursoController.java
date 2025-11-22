@@ -5,19 +5,22 @@
 package br.com.ifba.curso.controller;
 import br.com.ifba.curso.entity.Curso;
 import br.com.ifba.curso.service.ICursoService;
-import br.com.ifba.curso.service.CursoService;
 import br.com.ifba.infrastructure.util.StringUtil;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 
 /**
- * Camada Controller – faz a ponte entre a View e o Service.
- * Aplica validações antes de encaminhar para a regra de negócio.
  * @author luiza
+ * Controller gerenciado pelo Spring.
+ * Atua entre a View e a camada Service.
  */
-
+@Controller
 public class CursoController implements ICursoController {
 
-    private final ICursoService cursoService = new CursoService();
+    // Injeção de dependência via Spring
+    @Autowired
+    private ICursoService cursoService;
 
     @Override
     public void salvarCurso(Curso curso) {
@@ -47,7 +50,7 @@ public class CursoController implements ICursoController {
     }
 
     /**
-     * Regras de validação de negócio antes de salvar/atualizar.
+     * Validações básicas antes de enviar para o Service.
      */
     private void validarCurso(Curso curso) {
         if (curso == null)
@@ -57,10 +60,9 @@ public class CursoController implements ICursoController {
             throw new IllegalArgumentException("O nome do curso é obrigatório.");
 
         if (!StringUtil.hasMinLength(curso.getNome(), 3))
-            throw new IllegalArgumentException("O nome do curso deve ter pelo menos 3 caracteres.");
+            throw new IllegalArgumentException("O nome deve ter ao menos 3 caracteres.");
 
         if (StringUtil.isNullOrEmpty(curso.getProfessor()))
-            throw new IllegalArgumentException("O nome do professor é obrigatório.");
+            throw new IllegalArgumentException("O professor é obrigatório.");
     }
 }
-

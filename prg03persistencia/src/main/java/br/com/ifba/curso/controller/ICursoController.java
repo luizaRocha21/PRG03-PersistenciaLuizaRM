@@ -7,10 +7,9 @@ import br.com.ifba.curso.entity.Curso;
 import java.util.List;
 
 /**
- * Interface que define o contrato para o Controller de Curso.
  * @author luiza
+ * Contrato do Controller.
  */
-
 public interface ICursoController {
     void salvarCurso(Curso curso);
     void atualizarCurso(Curso curso);

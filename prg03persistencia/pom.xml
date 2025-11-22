@@ -60,6 +60,26 @@
             <artifactId>jboss-logging</artifactId>
             <version>3.5.0.Final</version>
         </dependency>
+        <!-- SPRING CORE -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>5.3.33</version>
+        </dependency>
+
+        <!-- SPRING BEANS -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+            <version>5.3.33</version>
+        </dependency>
+
+        <!-- SPRING CORE UTIL -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>5.3.33</version>
+        </dependency>
     </dependencies>
 
 </project>

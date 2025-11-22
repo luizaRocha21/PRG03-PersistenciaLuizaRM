@@ -9,6 +9,10 @@ import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import br.com.ifba.config.AppConfig;
+
 
 /**
  * Janela para adicionar, remover, editar e ordenar alunos de um curso.
@@ -29,6 +33,11 @@ public class AdicionarAlunos extends javax.swing.JFrame {
     private List<String> alunos;
     private JFrame parent; // Tela que chamou (CursoCadastrar ou CursoEditar)
 
+    // ApplicationContext do Spring - carregado apenas UMA vez
+    private static final ApplicationContext context =
+            new AnnotationConfigApplicationContext(AppConfig.class);
+
+
     // 🔹 Construtor que recebe o parent e a lista
     public AdicionarAlunos(JFrame parent, List<String> alunos) {
         initComponents();
@@ -42,10 +51,12 @@ public class AdicionarAlunos extends javax.swing.JFrame {
         @Override
         public void windowClosing(java.awt.event.WindowEvent e) {
             if (parent != null) {
-                if (parent instanceof CursoCadastrar cadastrar) {
+                if (parent instanceof CursoCadastrar) {
+                    CursoCadastrar cadastrar = context.getBean(CursoCadastrar.class);
                     cadastrar.atualizarListaAlunos(getAlunosAtualizados());
                     cadastrar.setVisible(true);
-                } else if (parent instanceof CursoEditar editar) {
+                } else if (parent instanceof CursoEditar) {
+                    CursoEditar editar = context.getBean(CursoEditar.class);
                     editar.atualizarListaAlunos(getAlunosAtualizados());
                     editar.setVisible(true);
                 }
@@ -87,12 +98,13 @@ public class AdicionarAlunos extends javax.swing.JFrame {
     // 🔹 Quando fechar, devolve a lista para a tela que chamou
     @Override
     public void dispose() {
-        if (parent instanceof CursoCadastrar cadastrar) {
+        if (parent instanceof CursoCadastrar) {
+            CursoCadastrar cadastrar = context.getBean(CursoCadastrar.class);
             cadastrar.atualizarListaAlunos(getAlunosAtualizados());
-        } else if (parent instanceof CursoEditar editar) {
+        } else if (parent instanceof CursoEditar) {
+            CursoEditar editar = context.getBean(CursoEditar.class);
             editar.atualizarListaAlunos(getAlunosAtualizados());
         }
-        super.dispose();
     }
 
     /**
@@ -297,10 +309,12 @@ public class AdicionarAlunos extends javax.swing.JFrame {
 
     private void btnSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvarActionPerformed
         // Atualiza a lista na tela que chamou
-    if (parent instanceof CursoCadastrar cadastrar) {
+    if (parent instanceof CursoCadastrar) {
+        CursoCadastrar cadastrar = context.getBean(CursoCadastrar.class);
         cadastrar.atualizarListaAlunos(getAlunosAtualizados());
         cadastrar.setVisible(true);
-    } else if (parent instanceof CursoEditar editar) {
+    } else if (parent instanceof CursoEditar) {
+        CursoEditar editar = context.getBean(CursoEditar.class);
         editar.atualizarListaAlunos(getAlunosAtualizados());
         editar.setVisible(true);
     }

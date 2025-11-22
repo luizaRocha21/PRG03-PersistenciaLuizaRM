@@ -5,7 +5,6 @@
 package br.com.ifba.infrastructure.util;
 
 /**
- *
  * @author luiza
  * Classe utilitária para validações de String.
  */

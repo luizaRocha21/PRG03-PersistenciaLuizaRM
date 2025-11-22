@@ -11,6 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import br.com.ifba.config.AppConfig;
+
 
 /**
  * Tela para edição de cursos existentes.
@@ -20,8 +24,12 @@ import javax.swing.JOptionPane;
 public class CursoEditar extends javax.swing.JFrame {
 
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CursoEditar.class.getName());
-    private final CursoController controller = new CursoController(); // ✅ usa o controller em vez do service direto
+    private final CursoController controller = context.getBean(CursoController.class);
     private Curso curso;
+    // ApplicationContext do Spring
+    private static final ApplicationContext context =
+        new AnnotationConfigApplicationContext(AppConfig.class);
+
 
     /**
      * Construtor que recebe o curso a ser editado.
@@ -370,7 +378,9 @@ public class CursoEditar extends javax.swing.JFrame {
 
             JOptionPane.showMessageDialog(this, "Curso atualizado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
             this.dispose();
-            new CursoListar().setVisible(true);
+            CursoListar telaListar = context.getBean(CursoListar.class);
+            telaListar.setVisible(true);
+
 
         } catch (IllegalArgumentException ex) {
             // Erro de validação do controller
@@ -386,10 +396,9 @@ public class CursoEditar extends javax.swing.JFrame {
     private void btnHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHomeActionPerformed
 
      //Botão Home — Retorna para a tela de listagem.
-     
         this.dispose();
-        new CursoListar().setVisible(true);
-
+        CursoListar telaListar = context.getBean(CursoListar.class);
+        telaListar.setVisible(true);
     }//GEN-LAST:event_btnHomeActionPerformed
     /**
      * Configura o comportamento da lista de alunos.

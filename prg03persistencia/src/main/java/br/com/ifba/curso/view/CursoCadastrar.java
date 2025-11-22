@@ -14,6 +14,10 @@ import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import br.com.ifba.config.AppConfig;
+
 
 /**
  * Tela responsável por cadastrar um novo curso.
@@ -29,6 +33,10 @@ public class CursoCadastrar extends javax.swing.JFrame {
     
     // Lista temporária de alunos associados ao curso
     private List<String> alunos = new ArrayList<>();
+    // Contexto do Spring para recuperar Controller e outras telas
+    private static final ApplicationContext context =
+        new AnnotationConfigApplicationContext(AppConfig.class);
+
 
     /**
      * Construtor padrão: inicializa a tela e configura a lista de alunos.
@@ -336,8 +344,8 @@ public class CursoCadastrar extends javax.swing.JFrame {
             curso.setDescricao(descricao);
             curso.setAlunos(alunos);
 
-            // Chama o controller (não o service diretamente)
-            CursoController controller = new CursoController();
+            // Chama o controller
+            CursoController controller = context.getBean(CursoController.class);
             controller.salvarCurso(curso);
 
             JOptionPane.showMessageDialog(this, "Curso salvo com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
@@ -350,7 +358,8 @@ public class CursoCadastrar extends javax.swing.JFrame {
 
             // Volta para a tela de listagem
             this.dispose();
-            new CursoListar().setVisible(true);
+            CursoListar telaListar = context.getBean(CursoListar.class);
+            telaListar.setVisible(true);
 
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Erro ao salvar curso: " + ex.getMessage(),
@@ -361,7 +370,8 @@ public class CursoCadastrar extends javax.swing.JFrame {
 
     private void btnHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHomeActionPerformed
        this.dispose();
-        new CursoListar().setVisible(true);
+        CursoListar telaListar = context.getBean(CursoListar.class);
+        telaListar.setVisible(true);
     }//GEN-LAST:event_btnHomeActionPerformed
     // === MÉTODOS AUXILIARES ===
     

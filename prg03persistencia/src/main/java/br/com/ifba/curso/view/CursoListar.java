@@ -14,12 +14,15 @@ import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import br.com.ifba.config.AppConfig;
+
 
 /**
  * Tela principal de listagem dos cursos.
  * Exibe os cursos em uma JTable com opções para editar ou remover.
  * Também permite adicionar novos cursos.
- *
  * @author luiza
  */
 public class CursoListar extends javax.swing.JFrame {
@@ -27,7 +30,11 @@ public class CursoListar extends javax.swing.JFrame {
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(CursoListar.class.getName());
     private TableRowSorter<DefaultTableModel> sorter;
     private java.util.List<Curso> cursos;
-    private final CursoController controller = new CursoController();
+    private final CursoController controller =
+        context.getBean(CursoController.class);
+    private static final ApplicationContext context =
+        new AnnotationConfigApplicationContext(AppConfig.class);
+
 
 
     public CursoListar() {
@@ -134,7 +141,7 @@ public class CursoListar extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnAdicionarCursoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAdicionarCursoActionPerformed
-        CursoCadastrar telaCadastro = new CursoCadastrar();
+        CursoCadastrar telaCadastro = context.getBean(CursoCadastrar.class);
         telaCadastro.setTitle("Cadastrar Novo Curso");
         telaCadastro.setVisible(true);
     }//GEN-LAST:event_btnAdicionarCursoActionPerformed
