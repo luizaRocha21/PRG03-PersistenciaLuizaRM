@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package br.com.ifba.curso.controller;
+
 import br.com.ifba.curso.entity.Curso;
 import br.com.ifba.curso.service.ICursoService;
 import br.com.ifba.infrastructure.util.StringUtil;
@@ -12,13 +13,11 @@ import org.springframework.stereotype.Controller;
 
 /**
  * @author luiza
- * Controller gerenciado pelo Spring.
- * Atua entre a View e a camada Service.
  */
+
 @Controller
 public class CursoController implements ICursoController {
 
-    // Injeção de dependência via Spring
     @Autowired
     private ICursoService cursoService;
 
@@ -49,20 +48,17 @@ public class CursoController implements ICursoController {
         return cursoService.buscarPorNome(nome);
     }
 
-    /**
-     * Validações básicas antes de enviar para o Service.
-     */
     private void validarCurso(Curso curso) {
         if (curso == null)
-            throw new IllegalArgumentException("O curso não pode ser nulo.");
+            throw new IllegalArgumentException("Curso não pode ser nulo.");
 
         if (StringUtil.isNullOrEmpty(curso.getNome()))
-            throw new IllegalArgumentException("O nome do curso é obrigatório.");
+            throw new IllegalArgumentException("Nome obrigatório.");
 
         if (!StringUtil.hasMinLength(curso.getNome(), 3))
-            throw new IllegalArgumentException("O nome deve ter ao menos 3 caracteres.");
+            throw new IllegalArgumentException("Nome deve ter pelo menos 3 caracteres.");
 
         if (StringUtil.isNullOrEmpty(curso.getProfessor()))
-            throw new IllegalArgumentException("O professor é obrigatório.");
+            throw new IllegalArgumentException("Professor obrigatório.");
     }
 }

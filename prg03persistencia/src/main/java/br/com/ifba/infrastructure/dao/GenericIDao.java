@@ -3,18 +3,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package br.com.ifba.infrastructure.dao;
-
-/**
- *
- * @author luiza
- */
 import java.util.List;
 
 /**
- * Interface genérica com operações CRUD básicas.
- * 
- * @param <T> Tipo da entidade.
+ * @author luiza
  */
+
 public interface GenericIDao<T> {
     void save(T entity);
     void update(T entity);
@@ -22,4 +16,3 @@ public interface GenericIDao<T> {
     T findById(Long id);
     List<T> findAll();
 }
-

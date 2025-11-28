@@ -3,12 +3,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package br.com.ifba.infrastructure.entity;
-
-/**
- *
- * @author luiza
- */
-
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -16,7 +10,8 @@ import jakarta.persistence.MappedSuperclass;
 
 /**
  * Classe base para todas as entidades persistentes.
- * Fornece um ID comum e reutilizável.
+ * Fornece um ID comum que será herdado pelas demais entidades.
+ * @author luiza
  */
 @MappedSuperclass
 public abstract class PersistenceEntity {

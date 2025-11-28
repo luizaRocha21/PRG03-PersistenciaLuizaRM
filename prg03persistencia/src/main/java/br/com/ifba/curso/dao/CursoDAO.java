@@ -10,8 +10,8 @@ import org.springframework.stereotype.Repository;
 
 /**
  * @author luiza
- * DAO de Curso gerenciado pelo Spring.
  */
+
 @Repository
 public class CursoDAO extends GenericDao<Curso> {
 
@@ -19,17 +19,12 @@ public class CursoDAO extends GenericDao<Curso> {
         super(Curso.class);
     }
 
-    /**
-     * Consulta específica pelo nome do curso.
-     */
     public Curso buscarPorNome(String nome) {
         try {
             return em.createQuery(
                 "SELECT c FROM Curso c LEFT JOIN FETCH c.alunos WHERE c.nome = :nome",
                 Curso.class
-            )
-            .setParameter("nome", nome)
-            .getSingleResult();
+            ).setParameter("nome", nome).getSingleResult();
         } catch (NoResultException e) {
             return null;
         }

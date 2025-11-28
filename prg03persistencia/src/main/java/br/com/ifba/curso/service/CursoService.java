@@ -3,34 +3,38 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package br.com.ifba.curso.service;
+
 import br.com.ifba.curso.dao.CursoDAO;
 import br.com.ifba.curso.entity.Curso;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author luiza
- * Camada de negócio, gerenciada pelo Spring.
  */
+
 @Service
 public class CursoService implements ICursoService {
 
-    // Injeção de dependência do DAO
     @Autowired
     private CursoDAO cursoDao;
 
     @Override
+    @Transactional
     public void salvarCurso(Curso curso) {
         cursoDao.save(curso);
     }
 
     @Override
+    @Transactional
     public void atualizarCurso(Curso curso) {
         cursoDao.update(curso);
     }
 
     @Override
+    @Transactional
     public void removerCurso(Curso curso) {
         cursoDao.delete(curso);
     }

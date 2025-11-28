@@ -4,61 +4,50 @@
  */
 package br.com.ifba.infrastructure.dao;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
+import jakarta.persistence.PersistenceContext;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
  * @author luiza
- * DAO genérico com operações CRUD básicas.
- * EntityManager manual
  */
+
 public abstract class GenericDao<T> implements GenericIDao<T> {
 
-    // Fábrica de EntityManager da JPA tradicional
-    protected static final EntityManagerFactory emf =
-            Persistence.createEntityManagerFactory("ifbaPU");
+    @PersistenceContext
+    protected EntityManager em;
 
-    // EntityManager utilizado pelos métodos CRUD
-    protected EntityManager em = emf.createEntityManager();
+    private final Class<T> clazz;
 
-    // Tipo da entidade para consultas dinâmicas
-    private final Class<T> typeClass;
-
-    protected GenericDao(Class<T> typeClass) {
-        this.typeClass = typeClass;
+    protected GenericDao(Class<T> clazz) {
+        this.clazz = clazz;
     }
 
     @Override
+    @Transactional
     public void save(T entity) {
-        em.getTransaction().begin();
         em.persist(entity);
-        em.getTransaction().commit();
     }
 
     @Override
+    @Transactional
     public void update(T entity) {
-        em.getTransaction().begin();
         em.merge(entity);
-        em.getTransaction().commit();
     }
 
     @Override
+    @Transactional
     public void delete(T entity) {
-        em.getTransaction().begin();
-        // remove exige entidade gerenciada → merge caso necessário
         em.remove(em.contains(entity) ? entity : em.merge(entity));
-        em.getTransaction().commit();
     }
 
     @Override
     public T findById(Long id) {
-        return em.find(typeClass, id);
+        return em.find(clazz, id);
     }
 
     @Override
     public List<T> findAll() {
-        return em.createQuery("FROM " + typeClass.getSimpleName(), typeClass)
-                 .getResultList();
+        return em.createQuery("FROM " + clazz.getSimpleName(), clazz).getResultList();
     }
 }

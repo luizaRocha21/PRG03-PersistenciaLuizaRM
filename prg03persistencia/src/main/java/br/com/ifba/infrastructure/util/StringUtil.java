@@ -5,10 +5,10 @@
 package br.com.ifba.infrastructure.util;
 
 /**
- * @author luiza
  * Classe utilitária para validações de String.
+ * Utilizada por Controllers e Services.
+ * @author luiza
  */
-
 public class StringUtil {
 
     // Verifica se é nulo ou vazio
@@ -21,9 +21,8 @@ public class StringUtil {
         return s != null && s.trim().length() >= minLength;
     }
 
-    // Verifica se é somente letras
+    // Verifica se contém apenas letras e acentos
     public static boolean isAlphabetic(String s) {
         return s != null && s.matches("^[A-Za-zÀ-ÿ\\s]+$");
     }
 }
-
