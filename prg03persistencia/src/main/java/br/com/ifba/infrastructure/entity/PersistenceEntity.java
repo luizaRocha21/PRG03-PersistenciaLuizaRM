@@ -3,28 +3,20 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package br.com.ifba.infrastructure.entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
- * Classe base para todas as entidades persistentes.
- * Fornece um ID comum que será herdado pelas demais entidades.
+ * Classe base de entidades com ID gerado automaticamente.
  * @author luiza
  */
 @MappedSuperclass
+@Getter     // Lombok gera getter
+@Setter     // Lombok gera setter
 public abstract class PersistenceEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 }

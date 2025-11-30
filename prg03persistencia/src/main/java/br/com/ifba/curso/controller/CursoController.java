@@ -3,23 +3,22 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package br.com.ifba.curso.controller;
-
 import br.com.ifba.curso.entity.Curso;
 import br.com.ifba.curso.service.ICursoService;
 import br.com.ifba.infrastructure.util.StringUtil;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 
 /**
+ * Controller gerenciado pelo Spring.
  * @author luiza
  */
-
 @Controller
+@RequiredArgsConstructor // injeta dependências finais automaticamente
 public class CursoController implements ICursoController {
 
-    @Autowired
-    private ICursoService cursoService;
+    private final ICursoService cursoService; // injetado pelo Spring
 
     @Override
     public void salvarCurso(Curso curso) {
@@ -48,17 +47,18 @@ public class CursoController implements ICursoController {
         return cursoService.buscarPorNome(nome);
     }
 
+    // Validações
     private void validarCurso(Curso curso) {
         if (curso == null)
             throw new IllegalArgumentException("Curso não pode ser nulo.");
 
         if (StringUtil.isNullOrEmpty(curso.getNome()))
-            throw new IllegalArgumentException("Nome obrigatório.");
+            throw new IllegalArgumentException("O nome é obrigatório.");
 
         if (!StringUtil.hasMinLength(curso.getNome(), 3))
-            throw new IllegalArgumentException("Nome deve ter pelo menos 3 caracteres.");
+            throw new IllegalArgumentException("O nome deve ter ao menos 3 caracteres.");
 
         if (StringUtil.isNullOrEmpty(curso.getProfessor()))
-            throw new IllegalArgumentException("Professor obrigatório.");
+            throw new IllegalArgumentException("Professor é obrigatório.");
     }
 }

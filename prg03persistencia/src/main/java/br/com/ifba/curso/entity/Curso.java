@@ -7,13 +7,19 @@ import br.com.ifba.infrastructure.entity.PersistenceEntity;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 /**
+ * Entidade Curso
  * @author luiza
- * Entidade Curso com alunos embutidos via ElementCollection.
  */
 @Entity
 @Table(name = "curso")
+@Data                       
+@NoArgsConstructor          
+@AllArgsConstructor
 public class Curso extends PersistenceEntity {
 
     private String nome;
@@ -23,17 +29,5 @@ public class Curso extends PersistenceEntity {
     @ElementCollection
     @CollectionTable(name = "curso_alunos", joinColumns = @JoinColumn(name = "curso_id"))
     @Column(name = "nome_aluno")
-    private List<String> alunos = new ArrayList<>();
-
-    public String getNome() { return nome; }
-    public void setNome(String nome) { this.nome = nome; }
-
-    public String getDescricao() { return descricao; }
-    public void setDescricao(String descricao) { this.descricao = descricao; }
-
-    public String getProfessor() { return professor; }
-    public void setProfessor(String professor) { this.professor = professor; }
-
-    public List<String> getAlunos() { return alunos; }
-    public void setAlunos(List<String> alunos) { this.alunos = alunos; }
+    private List<String> alunos = new ArrayList<>(); // continua inicializada
 }
